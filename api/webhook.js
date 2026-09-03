@@ -1,10 +1,18 @@
 const { readDiscounts, writeDiscounts } = require('../lib/github-store');
 const { resolveCategory } = require('../lib/categories');
 
-// Staffbase's Forms "Trigger URL" payload shape isn't publicly documented,
-// so this accepts several common shapes and matches fields by label. Check
-// the Vercel function logs after a real submission (logged below) and add
-// aliases here if a field isn't being picked up.
+// Staffbase's Forms "Trigger URL" payload shape isn't publicly documented.
+// Confirmed by inspecting a real submission (2026-09-02): the POST body is
+//   { "values": "{\"_0\":\"...\",\"_1\":\"...\", ...}" }
+// i.e. a JSON *string* under "values", keyed by the field's zero-based
+// position in the form — not by label. FIELD_ORDER below assumes the form
+// fields are added in exactly this order: Name, Address, Category,
+// Discount Description, Phone, Website, Terms and Details, How to Redeem.
+// If the form's field order ever changes, update FIELD_ORDER to match.
+const FIELD_ORDER = ['name', 'address', 'category', 'description', 'phone', 'website', 'terms', 'redeem'];
+
+// Fallback for label-keyed shapes, in case a different form/integration
+// sends field data by name instead of position.
 const FIELD_ALIASES = {
   name: ['name', 'business name', 'shop name', 'merchant', 'company'],
   address: ['address', 'location', 'business address'],
@@ -20,10 +28,24 @@ function normalizeKey(k) {
   return String(k).trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
-function extractFields(body) {
-  const candidates = [body, body?.data, body?.fields, body?.answers, body?.submission, body?.formData, body?.values].filter(
-    Boolean
-  );
+function extractFromValuesBlob(body) {
+  if (typeof body?.values !== 'string') return null;
+  let parsed;
+  try {
+    parsed = JSON.parse(body.values);
+  } catch (e) {
+    return null;
+  }
+  const result = {};
+  FIELD_ORDER.forEach((field, i) => {
+    const value = parsed['_' + i];
+    if (value !== undefined && value !== '') result[field] = value;
+  });
+  return result;
+}
+
+function extractFromLabeledShape(body) {
+  const candidates = [body, body?.data, body?.fields, body?.answers, body?.submission, body?.formData].filter(Boolean);
 
   const flat = {};
   for (const candidate of candidates) {
@@ -50,6 +72,12 @@ function extractFields(body) {
     }
   }
   return result;
+}
+
+function extractFields(body) {
+  const fromValues = extractFromValuesBlob(body);
+  if (fromValues && fromValues.name && fromValues.description) return fromValues;
+  return extractFromLabeledShape(body || {});
 }
 
 function truncate(text, max) {
