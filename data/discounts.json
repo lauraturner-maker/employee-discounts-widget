@@ -226,5 +226,17 @@
     "blurb": "20% off interior and exterior paint.",
     "details": "Discount applies to paint products only, not tools, brushes, or supplies. Valid at all regional locations.",
     "redeem": "Show your badge at the register."
+  },
+  {
+    "id": 20,
+    "name": "Chipotle",
+    "category": "food",
+    "address": "Main Street",
+    "phone": "555-654-3456",
+    "website": "www.chipotle.com",
+    "highlight": "$3 off any burrito or bowl.",
+    "blurb": "$3 off any burrito or bowl.",
+    "details": "Discount applies to any bowl size, any day of the week. Catering orders of $50 or more also qualify for 10% off — ask a manager for the catering menu.",
+    "redeem": "Show your hospital ID badge at checkout."
   }
 ]
