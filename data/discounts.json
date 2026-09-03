@@ -226,17 +226,5 @@
     "blurb": "20% off interior and exterior paint.",
     "details": "Discount applies to paint products only, not tools, brushes, or supplies. Valid at all regional locations.",
     "redeem": "Show your badge at the register."
-  },
-  {
-    "id": 20,
-    "name": "Test Deploy Check",
-    "category": "food",
-    "address": "1 Test St",
-    "phone": "555-0000",
-    "website": "www.test.example",
-    "highlight": "One dollar off",
-    "blurb": "One dollar off",
-    "details": "terms",
-    "redeem": "redeem"
   }
 ]
