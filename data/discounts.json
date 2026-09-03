@@ -238,5 +238,17 @@
     "blurb": "$3 off any burrito or bowl.",
     "details": "Discount applies to any bowl size, any day of the week. Catering orders of $50 or more also qualify for 10% off — ask a manager for the catering menu.",
     "redeem": "Show your hospital ID badge at checkout."
+  },
+  {
+    "id": 21,
+    "name": "Diagnostic Retest",
+    "category": "food",
+    "address": "1 Test St",
+    "phone": "555-0000",
+    "website": "www.test.example",
+    "highlight": "One dollar off",
+    "blurb": "One dollar off",
+    "details": "terms",
+    "redeem": "redeem"
   }
 ]
