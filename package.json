@@ -1,0 +1,9 @@
+{
+  "name": "employee-discounts-widget",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Staffbase Employee Discounts widget, wired to a Staffbase Form via an Automated Workflow webhook.",
+  "engines": {
+    "node": ">=18"
+  }
+}

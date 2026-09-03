@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Staffbase brand color via ?brand= URL param (sb-brand-url-param) -->
+<script>(function(){try{var b=new URLSearchParams(location.search).get('brand');if(b&&/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(b)){document.documentElement.style.setProperty('--sb-brand',b);}}catch(e){}})();</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="widget-name" content="Employee Discounts">
+<meta name="widget-description" content="Browse local shop discounts by category with search">
+<meta name="widget-tags" content="Misc, Recognition">
+<title>Employee Discounts</title>
+
+<style>
+    :root {
+        --primary: var(--sb-brand, #2563eb);
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --text: #1f2937;
+        --text-light: #6b7280;
+        --bg: #ffffff;
+        --bg-gray: #f9fafb;
+        --border: #e5e7eb;
+    }
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --primary: var(--sb-brand, #3b9eff);
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --text: #f3f4f6;
+            --text-light: #9ca3af;
+            --bg: #1f2937;
+            --bg-gray: #111827;
+            --border: #374151;
+        }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .widget {
+        width: 100%;
+        max-width: 980px;
+        margin: 0 auto;
+        background: var(--bg);
+        border-radius: 14px;
+        padding: 20px;
+    }
+
+    .cw-header {
+        text-align: center;
+        margin-bottom: 18px;
+    }
+
+    .cw-header h2 {
+        margin: 0 0 6px 0;
+        font-size: 22px;
+        letter-spacing: -0.01em;
+    }
+
+    .cw-header p {
+        margin: 0;
+        color: var(--text-light);
+        font-size: 14px;
+    }
+
+    .cw-sync-note {
+        text-align: center;
+        font-size: 11.5px;
+        color: var(--text-light);
+        margin: 4px 0 0 0;
+    }
+
+    .cw-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 16px;
+        position: sticky;
+        top: 0;
+        background: var(--bg);
+        padding: 6px 0;
+        z-index: 5;
+    }
+
+    .cw-search-wrap {
+        position: relative;
+    }
+
+    .cw-search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-light);
+        pointer-events: none;
+        font-size: 14px;
+    }
+
+    .cw-search {
+        width: 100%;
+        padding: 10px 12px 10px 34px;
+        font-size: 14px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--bg-gray);
+        color: var(--text);
+        font-family: inherit;
+    }
+
+    .cw-search:focus {
+        outline: 2px solid var(--primary);
+        outline-offset: 1px;
+    }
+
+    .cw-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .cw-tab {
+        padding: 6px 12px;
+        font-size: 13px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--bg-gray);
+        color: var(--text);
+        cursor: pointer;
+        font-family: inherit;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .cw-tab:hover { filter: brightness(0.96); }
+
+    .cw-tab.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+    }
+
+    .cw-count {
+        font-size: 12px;
+        color: var(--text-light);
+        margin-bottom: 10px;
+    }
+
+    .cw-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 14px;
+    }
+
+    .discount-card {
+        border: 1px solid var(--border);
+        background: var(--bg-gray);
+        border-radius: 12px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        cursor: pointer;
+        text-align: left;
+        font-family: inherit;
+        color: inherit;
+    }
+
+    .discount-card:hover {
+        border-color: var(--primary);
+    }
+
+    .discount-card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .discount-icon {
+        font-size: 20px;
+        line-height: 1;
+    }
+
+    .discount-badge {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--success);
+        background: color-mix(in srgb, var(--success) 16%, transparent);
+        border-radius: 6px;
+        padding: 3px 7px;
+        white-space: nowrap;
+    }
+
+    .discount-name {
+        font-size: 15px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .discount-category {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .discount-address {
+        font-size: 12.5px;
+        color: var(--text-light);
+        display: flex;
+        gap: 5px;
+        align-items: flex-start;
+    }
+
+    .discount-blurb {
+        font-size: 13px;
+        color: var(--text);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .discount-more {
+        margin-top: auto;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .cw-empty {
+        text-align: center;
+        color: var(--text-light);
+        font-size: 14px;
+        padding: 40px 16px;
+    }
+
+    /* Modal */
+    .cw-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        z-index: 50;
+    }
+
+    .cw-modal-overlay.open { display: flex; }
+
+    .cw-modal {
+        background: var(--bg);
+        border-radius: 14px;
+        max-width: 440px;
+        width: 100%;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 20px;
+        border: 1px solid var(--border);
+    }
+
+    .cw-modal-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 4px;
+    }
+
+    .cw-modal-close {
+        background: var(--bg-gray);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: 8px;
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .cw-modal h3 {
+        margin: 0 0 2px 0;
+        font-size: 18px;
+    }
+
+    .cw-modal-badge {
+        display: inline-block;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--success);
+        background: color-mix(in srgb, var(--success) 16%, transparent);
+        border-radius: 8px;
+        padding: 5px 10px;
+        margin: 10px 0;
+    }
+
+    .cw-modal-section {
+        margin-top: 14px;
+    }
+
+    .cw-modal-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--text-light);
+        margin-bottom: 4px;
+    }
+
+    .cw-modal-value {
+        font-size: 13.5px;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    @media (max-width: 480px) {
+        .widget { padding: 14px; }
+        .cw-grid { grid-template-columns: 1fr; }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="widget">
+    <div class="cw-header">
+        <h2 data-i18n="title"></h2>
+        <p data-i18n="description"></p>
+    </div>
+
+    <div class="cw-controls">
+        <div class="cw-search-wrap">
+            <span class="cw-search-icon">&#128269;</span>
+            <input type="text" class="cw-search" id="cw-search" data-i18n-placeholder="searchPlaceholder" placeholder="">
+        </div>
+        <div class="cw-tabs" id="cw-tabs"></div>
+    </div>
+
+    <div class="cw-count" id="cw-count"></div>
+    <div class="cw-grid" id="cw-grid"></div>
+    <div class="cw-empty" id="cw-empty" style="display:none;" data-i18n="noResults"></div>
+</div>
+
+<div class="cw-modal-overlay" id="cw-modal-overlay">
+    <div class="cw-modal" id="cw-modal" role="dialog" aria-modal="true"></div>
+</div>
+
+<script>
+    // =====================================================================
+    // WIDGET CONFIG — edit these two values for each Staffbase instance
+    // this widget is pasted into.
+    //
+    //   formId:           the ID of the Staffbase Form whose "Trigger URL"
+    //                     (Workflow tab) posts to this deployment's
+    //                     /api/webhook. Used only to double-check the
+    //                     widget is reading data meant for it; it does not
+    //                     need to be secret.
+    //   discountsApiUrl:  the /api/discounts endpoint of the Vercel
+    //                     deployment for this project
+    //                     (e.g. https://employee-discounts-widget.vercel.app/api/discounts).
+    //
+    // Both can also be overridden per-embed via URL query params, e.g.
+    // ?formId=12345&apiUrl=https%3A%2F%2F...  — handy for testing without
+    // editing the pasted HTML.
+    // =====================================================================
+    const CONFIG = {
+        formId: 'REPLACE_WITH_STAFFBASE_FORM_ID',
+        discountsApiUrl: 'https://REPLACE_WITH_YOUR_VERCEL_APP.vercel.app/api/discounts',
+    };
+    (function applyConfigOverrides() {
+        try {
+            const params = new URLSearchParams(location.search);
+            if (params.get('formId')) CONFIG.formId = params.get('formId');
+            if (params.get('apiUrl')) CONFIG.discountsApiUrl = params.get('apiUrl');
+        } catch (e) { /* ignore */ }
+    })();
+
+    // --- Language detection (per widgets/MULTILANGUAGE.md) ---
+    const LANG = (() => {
+        const l = navigator.language || '';
+        if (l.startsWith('de')) return 'de';
+        if (l.startsWith('fr')) return 'fr';
+        if (l.startsWith('es')) return 'es';
+        if (l.startsWith('ja')) return 'ja';
+        if (l === 'en-GB')      return 'en-GB';
+        return 'en-US';
+    })();
+    document.documentElement.lang = LANG;
+
+    const LOCALE = {
+        'de': 'de-DE', 'fr': 'fr-FR', 'es': 'es-ES',
+        'ja': 'ja-JP', 'en-GB': 'en-GB', 'en-US': 'en-US'
+    }[LANG];
+
+    // --- Translations ---
+    const T = {
+        de: {
+            title: 'Mitarbeiterrabatte',
+            description: 'Lokale Rabatte für Mitarbeitende – nach Kategorie durchsuchen',
+            searchPlaceholder: 'Rabatte durchsuchen...',
+            noResults: 'Keine Rabatte gefunden. Versuchen Sie eine andere Suche oder Kategorie.',
+            viewDetails: 'Details ansehen',
+            close: 'Schließen',
+            addressLabel: 'Adresse',
+            phoneLabel: 'Telefon',
+            websiteLabel: 'Website',
+            redeemLabel: 'So lösen Sie den Rabatt ein',
+            detailsLabel: 'Bedingungen & Details',
+            catAll: 'Alle Kategorien',
+            catFood: 'Essen & Trinken',
+            catFitness: 'Fitness & Freizeit',
+            catMisc: 'Sonstige Waren & Dienstleistungen',
+            catHousehold: 'Haushaltswaren',
+            catMoving: 'Umzugsunternehmen',
+            catCell: 'Mobilfunk',
+            catTravel: 'Reisen',
+            catAuto: 'Automobil',
+            catComputers: 'Computer',
+            catHardware: 'Baumarkt & Heimwerken',
+            catApartments: 'Wohnungen',
+            catPaint: 'Farben & Einzelhandel',
+        },
+        fr: {
+            title: 'Réductions employés',
+            description: "Réductions locales pour les employés, par catégorie ou recherche",
+            searchPlaceholder: 'Rechercher une réduction...',
+            noResults: "Aucune réduction trouvée. Essayez une autre recherche ou catégorie.",
+            viewDetails: 'Voir les détails',
+            close: 'Fermer',
+            addressLabel: 'Adresse',
+            phoneLabel: 'Téléphone',
+            websiteLabel: 'Site web',
+            redeemLabel: 'Comment en profiter',
+            detailsLabel: 'Conditions et détails',
+            catAll: 'Toutes les catégories',
+            catFood: 'Restauration',
+            catFitness: 'Fitness et loisirs',
+            catMisc: 'Biens et services divers',
+            catHousehold: 'Ameublement',
+            catMoving: 'Déménagement',
+            catCell: 'Téléphonie mobile',
+            catTravel: 'Voyage',
+            catAuto: 'Automobile',
+            catComputers: 'Informatique',
+            catHardware: 'Bricolage',
+            catApartments: 'Appartements',
+            catPaint: 'Peinture et commerce',
+        },
+        es: {
+            title: 'Descuentos para empleados',
+            description: 'Descuentos locales para empleados por categoría o búsqueda',
+            searchPlaceholder: 'Buscar descuentos...',
+            noResults: 'No se encontraron descuentos. Prueba con otra búsqueda o categoría.',
+            viewDetails: 'Ver detalles',
+            close: 'Cerrar',
+            addressLabel: 'Dirección',
+            phoneLabel: 'Teléfono',
+            websiteLabel: 'Sitio web',
+            redeemLabel: 'Cómo canjear',
+            detailsLabel: 'Condiciones y detalles',
+            catAll: 'Todas las categorías',
+            catFood: 'Comida',
+            catFitness: 'Fitness y ocio',
+            catMisc: 'Bienes y servicios varios',
+            catHousehold: 'Mobiliario del hogar',
+            catMoving: 'Empresas de mudanza',
+            catCell: 'Telefonía móvil',
+            catTravel: 'Viajes',
+            catAuto: 'Automoción',
+            catComputers: 'Informática',
+            catHardware: 'Ferretería y bricolaje',
+            catApartments: 'Apartamentos',
+            catPaint: 'Pinturas y comercio',
+        },
+        ja: {
+            title: '従業員割引',
+            description: '地元店舗の従業員割引をカテゴリや検索で確認',
+            searchPlaceholder: '割引を検索...',
+            noResults: '割引が見つかりませんでした。別の検索語やカテゴリをお試しください。',
+            viewDetails: '詳細を見る',
+            close: '閉じる',
+            addressLabel: '住所',
+            phoneLabel: '電話番号',
+            websiteLabel: 'ウェブサイト',
+            redeemLabel: '割引の利用方法',
+            detailsLabel: '利用条件・詳細',
+            catAll: 'すべてのカテゴリ',
+            catFood: '食品',
+            catFitness: 'フィットネス・レジャー',
+            catMisc: 'その他の商品・サービス',
+            catHousehold: '家庭用家具',
+            catMoving: '引越し業者',
+            catCell: '携帯電話',
+            catTravel: '旅行',
+            catAuto: '自動車',
+            catComputers: 'コンピューター',
+            catHardware: 'ホームセンター',
+            catApartments: 'アパート',
+            catPaint: '塗料・小売',
+        },
+        'en-GB': {
+            title: 'Employee Discounts',
+            description: 'Browse local shop discounts by category or search',
+            searchPlaceholder: 'Search discounts...',
+            noResults: 'No discounts found. Try a different search or category.',
+            viewDetails: 'View Details',
+            close: 'Close',
+            addressLabel: 'Address',
+            phoneLabel: 'Phone',
+            websiteLabel: 'Website',
+            redeemLabel: 'How to Redeem',
+            detailsLabel: 'Terms & Details',
+            catAll: 'All Categories',
+            catFood: 'Food',
+            catFitness: 'Fitness & Recreation',
+            catMisc: 'Misc. Goods & Services',
+            catHousehold: 'Household Furnishings',
+            catMoving: 'Moving Companies',
+            catCell: 'Cell Phones',
+            catTravel: 'Travel',
+            catAuto: 'Automotive',
+            catComputers: 'Computers',
+            catHardware: 'Hardware & Home Improvement',
+            catApartments: 'Apartments',
+            catPaint: 'Paint & Retail',
+        },
+        'en-US': {
+            title: 'Employee Discounts',
+            description: 'Browse local shop discounts by category or search',
+            searchPlaceholder: 'Search discounts...',
+            noResults: 'No discounts found. Try a different search or category.',
+            viewDetails: 'View Details',
+            close: 'Close',
+            addressLabel: 'Address',
+            phoneLabel: 'Phone',
+            websiteLabel: 'Website',
+            redeemLabel: 'How to Redeem',
+            detailsLabel: 'Terms & Details',
+            catAll: 'All Categories',
+            catFood: 'Food',
+            catFitness: 'Fitness & Recreation',
+            catMisc: 'Misc. Goods & Services',
+            catHousehold: 'Household Furnishings',
+            catMoving: 'Moving Companies',
+            catCell: 'Cell Phones',
+            catTravel: 'Travel',
+            catAuto: 'Automotive',
+            catComputers: 'Computers',
+            catHardware: 'Hardware & Home Improvement',
+            catApartments: 'Apartments',
+            catPaint: 'Paint & Retail',
+        },
+    };
+    const t = T[LANG] ?? T['en-US'];
+
+    // --- Staffbase brand color passthrough ---
+    function applySBBrand() {
+        var sb = getComputedStyle(document.documentElement).getPropertyValue('--sb-brand').trim();
+        if (sb) {
+            document.documentElement.style.setProperty('--primary', sb);
+            return;
+        }
+        try {
+            sb = window.parent.getComputedStyle(window.parent.document.documentElement)
+                    .getPropertyValue('--sb-brand').trim();
+            if (sb) document.documentElement.style.setProperty('--primary', sb);
+        } catch (e) { /* cross-origin, ignore */ }
+    }
+
+    // --- Category taxonomy (icon + translation key) ---
+    const CATEGORIES = [
+        { key: 'food',        icon: '\u{1F37D}️', label: () => t.catFood },
+        { key: 'fitness',     icon: '\u{1F4AA}',        label: () => t.catFitness },
+        { key: 'misc',        icon: '\u{1F6CD}️',  label: () => t.catMisc },
+        { key: 'household',   icon: '\u{1F6CB}️',  label: () => t.catHousehold },
+        { key: 'moving',      icon: '\u{1F4E6}',        label: () => t.catMoving },
+        { key: 'cell',        icon: '\u{1F4F1}',        label: () => t.catCell },
+        { key: 'travel',      icon: '✈️',      label: () => t.catTravel },
+        { key: 'auto',        icon: '\u{1F697}',        label: () => t.catAuto },
+        { key: 'computers',   icon: '\u{1F4BB}',        label: () => t.catComputers },
+        { key: 'hardware',    icon: '\u{1F527}',        label: () => t.catHardware },
+        { key: 'apartments',  icon: '\u{1F3E2}',        label: () => t.catApartments },
+        { key: 'paint',       icon: '\u{1F3A8}',        label: () => t.catPaint },
+    ];
+    const CAT_BY_KEY = Object.fromEntries(CATEGORIES.map(c => [c.key, c]));
+
+    // --- Seed discount directory — shown immediately, then replaced by
+    // live data from CONFIG.discountsApiUrl once it loads. Kept as a
+    // fallback so the widget still renders something if the API is
+    // unreachable (e.g. misconfigured CONFIG, or the endpoint is down). ---
+    const SEED_DISCOUNTS = [
+        { id: 1, name: 'Corner Bowl Poke', category: 'food', address: '3145 Riverside Ave, Springfield', phone: '(555) 019-2841', website: 'www.cornerbowlpoke.example',
+          highlight: '$1.25 off large bowls', blurb: '$1.25 off any large poke bowl, $1 off regular size.',
+          details: 'Discount applies to any bowl size, any day of the week. Catering orders of $50 or more also qualify for 10% off — ask a manager for the catering menu.',
+          redeem: 'Show your hospital ID badge at checkout.' },
+        { id: 2, name: 'Riverside Hospital Cafeteria', category: 'food', address: 'Main Campus, Ground Floor', phone: 'Ext. 2200', website: '—',
+          highlight: '20% off', blurb: '20% off all cafeteria purchases, every shift.',
+          details: 'Available to all hospital staff at any time the cafeteria is open, including nights and weekends. The discount is applied automatically at checkout.',
+          redeem: 'Swipe your staff badge at the register.' },
+        { id: 3, name: 'FreshPrep Meal Co.', category: 'food', address: '694 Madison Ave, Springfield', phone: '(555) 019-4470', website: 'www.freshprepmeals.example',
+          highlight: '10% off online orders', blurb: '10% off all online meal-prep orders.',
+          details: 'Orders must be placed online by Thursday each week for Saturday pickup at the storefront. Discount does not apply to gift cards.',
+          redeem: 'Enter code STAFF10 at online checkout.' },
+        { id: 4, name: 'PulseFit 24', category: 'fitness', address: '3918 Sunset Hwy, Springfield', phone: '(555) 019-7732', website: 'www.pulsefit24.example',
+          highlight: 'No enrollment fee', blurb: 'No enrollment fee plus 10% off monthly dues.',
+          details: 'Requires a 12-month membership agreement. Includes access to all nationwide PulseFit locations and one free fitness assessment.',
+          redeem: 'Present your hospital badge when signing up in person.' },
+        { id: 5, name: 'Basecamp Strength Studio', category: 'fitness', address: '6450 Poplar Ave, Springfield', phone: '(555) 019-5510', website: 'www.basecampstrength.example',
+          highlight: '25% off dues', blurb: '25% off month-to-month membership dues.',
+          details: 'Applies only to month-to-month memberships; does not apply to annual contracts, class packs, or personal training add-ons.',
+          redeem: 'Mention the hospital partner program when you sign up.' },
+        { id: 6, name: 'Wellness Healthplex', category: 'fitness', address: 'East Wing, Medical Plaza', phone: 'Ext. 3100', website: '—',
+          highlight: '$20/month', blurb: '$20/month membership with a one-time $35 enrollment fee.',
+          details: 'Includes pool access, group fitness classes, and locker rooms. A family add-on is available for an extra $10/month per person.',
+          redeem: 'Enroll at the front desk with your staff badge.' },
+        { id: 7, name: 'BloomExpress Flowers', category: 'misc', address: '42 Elm Street, Springfield', phone: '(555) 019-6620', website: 'www.bloomexpress.example',
+          highlight: '15% off', blurb: '15% off all flower and gift purchases.',
+          details: 'Enter the discount code online at checkout, or mention it in-store. Excludes wedding packages and large event orders.',
+          redeem: 'Use code CORPSHOP online or in-store.' },
+        { id: 8, name: 'Main Lobby Gift Shop', category: 'misc', address: 'Main Lobby, Hospital Campus', phone: 'Ext. 2050', website: '—',
+          highlight: '10% off', blurb: '10% off regular-priced cards, gifts, and sundries.',
+          details: 'Discount applies to regular-priced merchandise only and cannot be combined with items already marked down or on clearance.',
+          redeem: 'Show your badge at checkout.' },
+        { id: 9, name: 'Bliss Massage Therapy', category: 'misc', address: '9033 Garden Arbor Dr, Springfield', phone: '(555) 019-3388', website: 'www.blissmassage.example',
+          highlight: '$10 off', blurb: '$10 off any massage therapy session.',
+          details: 'Valid for hospital staff and immediate family members. Book online or call ahead and mention the employee discount.',
+          redeem: 'Mention the discount when booking your appointment.' },
+        { id: 10, name: 'Reliable Roofing & Home Repair', category: 'household', address: 'Serving the Springfield metro area', phone: '(555) 019-2299', website: 'www.reliableroofing.example',
+          highlight: 'Up to $750 off', blurb: '$50 off repairs over $250; up to $750 off a full roof replacement.',
+          details: 'Includes a free inspection and written quote. Financing options are available for larger projects.',
+          redeem: 'Call and mention the hospital employee program.' },
+        { id: 11, name: 'Summit Moving & Storage', category: 'moving', address: 'Regional service area', phone: '(555) 019-8810', website: 'www.summitmoving.example',
+          highlight: 'Corporate rate', blurb: 'Discounted corporate moving and storage rates.',
+          details: 'Rate includes packing materials and short-term storage options. Long-distance moves are quoted separately.',
+          redeem: 'Reference the hospital partner code when requesting a quote.' },
+        { id: 12, name: 'Horizon Wireless', category: 'cell', address: '2436 Main St, Springfield', phone: '(555) 019-1150', website: 'www.horizonwireless.example',
+          highlight: '$10 off per line', blurb: '$10 off per line on unlimited plans.',
+          details: 'Discount applies automatically once your employer email is verified in-store or online. May be combined with select carrier promotions.',
+          redeem: 'Verify your employment in-store or through the online portal.' },
+        { id: 13, name: 'TravelSaver Hotels', category: 'travel', address: 'Online booking portal', phone: '—', website: 'www.travelsaverhotels.example',
+          highlight: 'Up to 40% off', blurb: 'Up to 40% off select hotels worldwide.',
+          details: 'Participating properties are listed on the employee travel portal and are updated weekly. Rates vary by location and season.',
+          redeem: 'Book through the employee travel portal link.' },
+        { id: 14, name: 'DriveEasy Car Rental', category: 'travel', address: 'Nationwide locations', phone: '1-800-555-0199', website: 'www.driveeasyrental.example',
+          highlight: 'Up to 25% off', blurb: 'Save up to 25% on every rental.',
+          details: 'Discount applies to the base rental rate and can be applied when booking online or by phone.',
+          redeem: 'Enter the corporate discount code at booking.' },
+        { id: 15, name: 'QuickLube Auto Service', category: 'auto', address: '510 Perkins Ext, Springfield', phone: '(555) 019-4021', website: 'www.quicklubeauto.example',
+          highlight: '15% off', blurb: '15% off oil changes and vehicle inspections.',
+          details: 'Applies to standard maintenance services. Does not cover parts replacement over $100 or major repairs.',
+          redeem: 'Show your badge at drop-off.' },
+        { id: 16, name: 'TechHub Computers', category: 'computers', address: 'Online & in-store', phone: '(555) 019-7765', website: 'www.techhubcomputers.example',
+          highlight: '10% off', blurb: '10% off laptops, desktops, and accessories.',
+          details: 'Discount applies to most in-stock items. Excludes clearance items, pre-orders, and extended warranty plans.',
+          redeem: 'Use the employee portal link for online orders, or show your badge in-store.' },
+        { id: 17, name: 'Handy Hardware Co.', category: 'hardware', address: '608 Hwy 80 E, Springfield', phone: '(555) 019-3345', website: '—',
+          highlight: '$5 off $50+', blurb: '$5 off purchases of $50 or more.',
+          details: 'Valid on in-store purchases only. Cannot be combined with other sales, coupons, or promotions.',
+          redeem: 'Show your badge at checkout.' },
+        { id: 18, name: 'Parkview Apartments', category: 'apartments', address: '121 Medical Dr, Springfield', phone: '(555) 019-9902', website: 'www.parkviewapts.example',
+          highlight: '$200 off first month', blurb: 'Waived application fee plus $200 off your first month.',
+          details: 'Available to full-time hospital staff on approved 12-month leases. Availability varies — contact the leasing office to confirm current openings.',
+          redeem: 'Mention the hospital partner program when you apply.' },
+        { id: 19, name: 'ColorCraft Paints', category: 'paint', address: '303 Van Buren St, Springfield', phone: '(555) 019-2758', website: 'www.colorcraftpaints.example',
+          highlight: '20% off', blurb: '20% off interior and exterior paint.',
+          details: 'Discount applies to paint products only, not tools, brushes, or supplies. Valid at all regional locations.',
+          redeem: 'Show your badge at the register.' },
+    ];
+
+    // --- State ---
+    let DISCOUNTS = SEED_DISCOUNTS;
+    let activeCategory = 'all';
+    let searchQuery = '';
+
+    // Pulls the latest discount list (seed + anything created via the
+    // Staffbase Forms webhook) and re-renders in place once it arrives.
+    async function loadLiveDiscounts() {
+        if (!CONFIG.discountsApiUrl || CONFIG.discountsApiUrl.includes('REPLACE_WITH')) {
+            console.warn('Employee Discounts widget: CONFIG.discountsApiUrl is not set, showing seed data only.');
+            return;
+        }
+        try {
+            const url = new URL(CONFIG.discountsApiUrl);
+            if (CONFIG.formId && !CONFIG.formId.includes('REPLACE_WITH')) {
+                url.searchParams.set('formId', CONFIG.formId);
+            }
+            const res = await fetch(url.toString());
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            if (Array.isArray(data.discounts) && data.discounts.length > 0) {
+                DISCOUNTS = data.discounts;
+                renderAll();
+            }
+            if (data.warning) console.warn('Employee Discounts widget:', data.warning);
+        } catch (e) {
+            console.warn('Employee Discounts widget: failed to load live discounts, showing seed data.', e);
+        }
+    }
+
+    function matchesFilters(item) {
+        if (activeCategory !== 'all' && item.category !== activeCategory) return false;
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            const hay = (item.name + ' ' + item.address + ' ' + item.blurb).toLowerCase();
+            if (!hay.includes(q)) return false;
+        }
+        return true;
+    }
+
+    function renderTabs() {
+        const wrap = document.getElementById('cw-tabs');
+        wrap.innerHTML = '';
+        const allTab = document.createElement('button');
+        allTab.type = 'button';
+        allTab.className = 'cw-tab' + (activeCategory === 'all' ? ' active' : '');
+        allTab.textContent = t.catAll;
+        allTab.addEventListener('click', () => { activeCategory = 'all'; renderAll(); });
+        wrap.appendChild(allTab);
+
+        CATEGORIES.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'cw-tab' + (activeCategory === cat.key ? ' active' : '');
+            btn.innerHTML = '<span>' + cat.icon + '</span><span>' + cat.label() + '</span>';
+            btn.addEventListener('click', () => { activeCategory = cat.key; renderAll(); });
+            wrap.appendChild(btn);
+        });
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('cw-grid');
+        const empty = document.getElementById('cw-empty');
+        const count = document.getElementById('cw-count');
+        const filtered = DISCOUNTS.filter(matchesFilters);
+
+        count.textContent = filtered.length + ' / ' + DISCOUNTS.length;
+        grid.innerHTML = '';
+
+        if (filtered.length === 0) {
+            empty.style.display = 'block';
+            return;
+        }
+        empty.style.display = 'none';
+
+        filtered.forEach(item => {
+            const cat = CAT_BY_KEY[item.category] || CAT_BY_KEY.misc;
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'discount-card';
+            card.innerHTML =
+                '<div class="discount-card-top">' +
+                    '<span class="discount-icon">' + cat.icon + '</span>' +
+                    '<span class="discount-badge">' + item.highlight + '</span>' +
+                '</div>' +
+                '<div class="discount-category">' + cat.label() + '</div>' +
+                '<div class="discount-name">' + item.name + '</div>' +
+                '<div class="discount-address"><span>\u{1F4CD}</span><span>' + item.address + '</span></div>' +
+                '<p class="discount-blurb">' + item.blurb + '</p>' +
+                '<div class="discount-more">' + t.viewDetails + ' →</div>';
+            card.addEventListener('click', () => openModal(item));
+            grid.appendChild(card);
+        });
+    }
+
+    function renderAll() {
+        renderTabs();
+        renderGrid();
+    }
+
+    // --- Modal ---
+    function openModal(item) {
+        const cat = CAT_BY_KEY[item.category] || CAT_BY_KEY.misc;
+        const overlay = document.getElementById('cw-modal-overlay');
+        const modal = document.getElementById('cw-modal');
+
+        const websiteRow = item.website && item.website !== '—'
+            ? '<div class="cw-modal-section"><div class="cw-modal-label">' + t.websiteLabel + '</div><p class="cw-modal-value">' + item.website + '</p></div>'
+            : '';
+        const phoneRow = item.phone && item.phone !== '—'
+            ? '<div class="cw-modal-section"><div class="cw-modal-label">' + t.phoneLabel + '</div><p class="cw-modal-value">' + item.phone + '</p></div>'
+            : '';
+
+        modal.innerHTML =
+            '<div class="cw-modal-top">' +
+                '<div>' +
+                    '<div class="discount-category">' + cat.icon + ' ' + cat.label() + '</div>' +
+                    '<h3>' + item.name + '</h3>' +
+                '</div>' +
+                '<button type="button" class="cw-modal-close" id="cw-modal-close-btn" aria-label="' + t.close + '">&times;</button>' +
+            '</div>' +
+            '<div class="cw-modal-badge">' + item.highlight + '</div>' +
+            '<div class="cw-modal-section">' +
+                '<div class="cw-modal-label">' + t.addressLabel + '</div>' +
+                '<p class="cw-modal-value">' + item.address + '</p>' +
+            '</div>' +
+            phoneRow +
+            websiteRow +
+            '<div class="cw-modal-section">' +
+                '<div class="cw-modal-label">' + t.detailsLabel + '</div>' +
+                '<p class="cw-modal-value">' + (item.details || '—') + '</p>' +
+            '</div>' +
+            '<div class="cw-modal-section">' +
+                '<div class="cw-modal-label">' + t.redeemLabel + '</div>' +
+                '<p class="cw-modal-value">' + (item.redeem || '—') + '</p>' +
+            '</div>';
+
+        overlay.classList.add('open');
+        document.getElementById('cw-modal-close-btn').addEventListener('click', closeModal);
+    }
+
+    function closeModal() {
+        document.getElementById('cw-modal-overlay').classList.remove('open');
+    }
+
+    // --- Apply translations + init ---
+    function applyTranslations() {
+        applySBBrand();
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.dataset.i18n;
+            if (t[key] !== undefined) el.textContent = t[key];
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.dataset.i18nPlaceholder;
+            if (t[key] !== undefined) el.placeholder = t[key];
+        });
+    }
+
+    function init() {
+        applyTranslations();
+        renderAll();
+        loadLiveDiscounts();
+
+        document.getElementById('cw-search').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderGrid();
+        });
+
+        const overlay = document.getElementById('cw-modal-overlay');
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<!-- Widget usage counter — see CLAUDE.md -->
+<script>(function(){try{if(location.search.indexOf('preview=1')!==-1)return;var n=location.pathname.split('/').pop();if(!n||n==='index.html')return;var url='https://widget-counter.klauejohann.workers.dev/bump/'+encodeURIComponent(n);if(navigator.sendBeacon)navigator.sendBeacon(url);else fetch(url,{method:'POST',keepalive:true}).catch(function(){});var k='widgetCounts',c=JSON.parse(localStorage.getItem(k)||'{}');c[n]=(c[n]||0)+1;localStorage.setItem(k,JSON.stringify(c));}catch(e){}})();</script>
+
+</body>
+</html>
