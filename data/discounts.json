@@ -226,5 +226,17 @@
     "blurb": "20% off interior and exterior paint.",
     "details": "Discount applies to paint products only, not tools, brushes, or supplies. Valid at all regional locations.",
     "redeem": "Show your badge at the register."
+  },
+  {
+    "id": 20,
+    "name": "Otis Coffee",
+    "category": "food",
+    "address": "Main Lobby",
+    "phone": "684-235-4213",
+    "website": "www.otiscoffee.com",
+    "highlight": "$1 off Medium and Large coffees",
+    "blurb": "$1 off Medium and Large coffees",
+    "details": "Available to all hospital staff at any time the cafeteria is open, including nights and weekends. The discount is applied automatically at checkout.",
+    "redeem": "Enter code STAFF1 at online checkout."
   }
 ]
